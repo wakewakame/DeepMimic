@@ -1,3 +1,28 @@
+# WSL2+Docker+X11を用いた起動方法
+
+まず Docker 内のプログラムがウィンドウを表示できるようにするため `cmd` か `powershell` から `vcxsrv` を起動する。
+
+```
+& 'C:\Program Files\VcXsrv\vcxsrv.exe' -multiwindow -clipboard -nowgl -ac
+```
+
+ここで `-nowgl` オプションは重要で、これをつけないとLinuxのOpenGLのバージョンが古くなってプログラムが起動できなくなった。
+
+次に `WSL` で `DeepMimic` を起動する。
+`export DISPLAY="192.168.11.3:0"` のIPアドレスの部分はWindowsのIPアドレスに書き換える。
+
+```sh
+git clone https://github.com/wakewakame/DeepMimic.git
+cd DeepMimic/docker
+./start build
+./start run
+cd DeepMimicCore
+./build.sh
+cd ../
+export DISPLAY="192.168.11.3:0"
+python DeepMimic.py --arg_file args/run_humanoid3d_spinkick_args.txt
+```
+
 # Intro 
 
 Code accompanying the following papers:

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eu
 
 echo "DeepMimic Linux script to download, build the dependencies and the core library"
 
@@ -148,11 +149,7 @@ swig4
 
 cd $DMC
 
-if [ ! -f _DeepMimicCore.so ] || [ ! -f DeepMimicCore.py ]; then
-  make python || exit 1
-  [ -f _DeepMimicCore.so ] || exit 1
-  [ -f DeepMimicCore.py ] || exit 1
-fi
+make python || exit 1
 
 command -v patchelf >/dev/null
 if [ $? == 0 ]; then

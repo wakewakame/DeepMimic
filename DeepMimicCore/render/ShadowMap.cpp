@@ -31,7 +31,7 @@ bool cShadowMap::Init(unsigned int width, unsigned int height)
 	glGenFramebuffers(1, &mObject);
 	glBindFramebuffer(GL_FRAMEBUFFER, mObject);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mTexture, 0);
+	//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mTexture, 0);
 
 	//Intel OpenGL driver crashes when using GL_NONE for glDrawBuffer on Linux, so use a workaround
 #ifdef _WIN32
