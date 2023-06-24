@@ -24,7 +24,7 @@ case "$1" in
         ;;
     "exec" )
         # 既に起動しているDockerコンテナにログイン
-        docker exec -it deepmimic /bin/zsh
+        docker exec -it deepmimic /bin/bash
         ;;
     *)
         echo "invalid args"

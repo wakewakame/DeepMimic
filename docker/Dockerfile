@@ -5,8 +5,8 @@ RUN apt update -y
 RUN apt upgrade -y
 RUN apt install -y vim tmux git cmake wget clang
 RUN apt install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev mesa-utils libglu1-mesa-dev libpython3.7-dev python3-pip libopenmpi-dev
-
 RUN apt install -y curl libssl-dev zlib1g-dev
+RUN apt install -y patchelf
 
 ARG USERNAME=user
 ARG GROUPNAME=user
@@ -22,6 +22,10 @@ RUN ~/.pyenv/bin/pyenv global 3.7.13
 RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
 RUN echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
 RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+
+# 以下を設定しないとトレーニング中に 'Read -1, expected <someNumber>, errno = 1' というエラーが出てしまう
+# 参考: https://github.com/open-mpi/ompi/issues/4948
+RUN echo 'export OMPI_MCA_btl_vader_single_copy_mechanism=none' >> ~/.bashrc
 
 WORKDIR /home/$USERNAME/DeepMimic
 COPY requirements.txt /home/$USERNAME/DeepMimic

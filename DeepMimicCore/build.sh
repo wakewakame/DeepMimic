@@ -1,5 +1,4 @@
 #!/bin/bash
-set -eu
 
 echo "DeepMimic Linux script to download, build the dependencies and the core library"
 
