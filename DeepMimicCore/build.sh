@@ -70,11 +70,11 @@ GL() {
 }
 
 freeglut() {
-  download https://downloads.sourceforge.net/project/freeglut/freeglut/3.0.0/freeglut-3.0.0.tar.gz
-  if [ ! -d freeglut-3.0.0 ]; then
-    tar -xvzf freeglut-3.0.0.tar.gz || exit 1
+  download https://downloads.sourceforge.net/project/freeglut/freeglut/3.4.0/freeglut-3.4.0.tar.gz
+  if [ ! -d freeglut-3.4.0 ]; then
+    tar -xvzf freeglut-3.4.0.tar.gz || exit 1
   fi
-  cd freeglut-3.0.0
+  cd freeglut-3.4.0
   if [ ! -f Makefile ]; then
     cmake . -DCMAKE_INSTALL_PREFIX=install || exit 1
   fi
@@ -109,11 +109,11 @@ glew() {
 }
 
 swig4() {
-  download https://downloads.sourceforge.net/project/swig/swig/swig-4.0.0/swig-4.0.0.tar.gz
-  if [ ! -d swig-4.0.0 ]; then
-    tar -xzf swig-4.0.0.tar.gz || exit 1
+  download https://downloads.sourceforge.net/project/swig/swig/swig-4.1.1/swig-4.1.1.tar.gz
+  if [ ! -d swig-4.1.1 ]; then
+    tar -xzf swig-4.1.1.tar.gz || exit 1
   fi
-  cd swig-4.0.0
+  cd swig-4.1.1
   if [ ! -f Makefile ]; then
     ./configure --without-pcre --prefix $PWD/install || exit 1
   fi
