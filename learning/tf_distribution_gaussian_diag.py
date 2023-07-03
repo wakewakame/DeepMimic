@@ -32,10 +32,10 @@ class TFDistributionGaussianDiag(TFDistribution):
         return dist
 
     def __init__(self, input, dim, std_type,
-                 mean_kernel_init=tf.contrib.layers.xavier_initializer(),
-                 mean_bias_init=tf.zeros_initializer(), 
-                 logstd_kernel_init=tf.contrib.layers.xavier_initializer(),
-                 logstd_bias_init=tf.zeros_initializer(), 
+                 mean_kernel_init=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
+                 mean_bias_init=tf.compat.v1.zeros_initializer(), 
+                 logstd_kernel_init=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
+                 logstd_bias_init=tf.compat.v1.zeros_initializer(), 
                  name="dist_gauss_diag", direct_mean=None, direct_logstd=None,
                  reuse=False): 
 
@@ -53,7 +53,7 @@ class TFDistributionGaussianDiag(TFDistribution):
         self._mean = direct_mean
         self._logstd = direct_logstd
 
-        with tf.variable_scope(name, reuse=reuse):
+        with tf.compat.v1.variable_scope(name, reuse=reuse):
             self._build_params(reuse)
         
         mean = self.get_mean()
@@ -132,7 +132,7 @@ class TFDistributionGaussianDiag(TFDistribution):
     
     def sample(self):
         shape_tf = tf.shape(self._mean)
-        noise = tf.random_normal(shape_tf)
+        noise = tf.random.normal(shape_tf)
         samples_tf = self.sample_noise(noise)
 
         return samples_tf
@@ -146,7 +146,7 @@ class TFDistributionGaussianDiag(TFDistribution):
         assert(noise_clip >= 0.0)
 
         shape_tf = tf.shape(self._mean)
-        noise = tf.random_normal(shape_tf)
+        noise = tf.random.normal(shape_tf)
         noise = tf.clip_by_value(noise, -noise_clip, noise_clip)
         samples_tf = self.sample_noise(noise)
 
@@ -157,7 +157,7 @@ class TFDistributionGaussianDiag(TFDistribution):
         cond_shape = cond_tf.get_shape().as_list()
         shape_tf = tf.shape(self._mean)
         
-        sample_tf = self._std * tf.random_normal(shape_tf)
+        sample_tf = self._std * tf.random.normal(shape_tf)
         
         sample_shape = sample_tf.get_shape().as_list()
         assert (len(sample_shape) == len(cond_shape) + 1)
@@ -195,7 +195,7 @@ class TFDistributionGaussianDiag(TFDistribution):
         return
 
     def _build_params_mean(self, input, name, reuse):
-        mean = tf.layers.dense(inputs=input, units=self._dim, activation=None,
+        mean = tf.compat.v1.layers.dense(inputs=input, units=self._dim, activation=None,
                                 kernel_initializer=self._mean_kernel_init,
                                 bias_initializer=self._mean_bias_init, 
                                 name=name, reuse=reuse)
@@ -203,14 +203,14 @@ class TFDistributionGaussianDiag(TFDistribution):
 
     def _build_params_logstd(self, input, mean_shape, name, reuse):
         if ((self._std_type == self.StdType.Default) or (self._std_type == self.StdType.Constant)):
-            with tf.variable_scope(name, reuse=reuse):
+            with tf.compat.v1.variable_scope(name, reuse=reuse):
                 trainable = (self._std_type == self.StdType.Constant)
-                logstd = tf.get_variable(dtype=tf.float32, name="bias", initializer=self._logstd_bias_init,
+                logstd = tf.compat.v1.get_variable(dtype=tf.float32, name="bias", initializer=self._logstd_bias_init,
                                           trainable=trainable)
                 logstd = tf.broadcast_to(logstd, mean_shape)
 
         elif (self._std_type == self.StdType.Variable):
-            logstd = tf.layers.dense(inputs=input, units=self._dim, activation=None,
+            logstd = tf.compat.v1.layers.dense(inputs=input, units=self._dim, activation=None,
                                 kernel_initializer=self._logstd_kernel_init, 
                                 bias_initializer=self._logstd_bias_init, 
                                 name=name, reuse=reuse)

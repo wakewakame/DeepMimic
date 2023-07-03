@@ -80,7 +80,7 @@ class MPISolver(Solver):
         for v in self.vars:
             shape = v.get_shape()
             grad = np.zeros(shape)
-            grad_tf = tf.placeholder(tf.float32, shape=shape)
+            grad_tf = tf.compat.v1.placeholder(tf.float32, shape=shape)
             self._grad_buffers.append(grad)
             self._grad_tf_list.append(grad_tf)
 

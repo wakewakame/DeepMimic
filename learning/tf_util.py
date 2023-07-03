@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 
-xavier_initializer = tf.contrib.layers.xavier_initializer()
+xavier_initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform")
 
 def disable_gpu():
     os.environ["CUDA_VISIBLE_DEVICES"] = '-1'
@@ -27,8 +27,8 @@ def flat_grad(loss, var_list, grad_ys=None):
 def fc_net(input, layers_sizes, activation, reuse=None, flatten=False): # build fully connected network
     curr_tf = input
     for i, size in enumerate(layers_sizes):
-        with tf.variable_scope(str(i), reuse=reuse):
-            curr_tf = tf.layers.dense(inputs=curr_tf,
+        with tf.compat.v1.variable_scope(str(i), reuse=reuse):
+            curr_tf = tf.compat.v1.layers.dense(inputs=curr_tf,
                                     units=size,
                                     kernel_initializer=xavier_initializer,
                                     activation = activation if i < len(layers_sizes)-1 else None)
@@ -50,7 +50,7 @@ def flat_grad(loss, var_list):
 
 
 def calc_logp_gaussian(x_tf, mean_tf, std_tf):
-    dim = tf.to_float(tf.shape(x_tf)[-1])
+    dim = tf.cast(tf.shape(x_tf)[-1], dtype=tf.float32)
 
     if mean_tf is None:
         diff_tf = x_tf
@@ -58,7 +58,7 @@ def calc_logp_gaussian(x_tf, mean_tf, std_tf):
         diff_tf = x_tf - mean_tf
 
     logp_tf = -0.5 * tf.reduce_sum(tf.square(diff_tf / std_tf), axis=-1)
-    logp_tf += -0.5 * dim * np.log(2 * np.pi) - tf.reduce_sum(tf.log(std_tf), axis=-1)
+    logp_tf += -0.5 * dim * np.log(2 * np.pi) - tf.reduce_sum(tf.math.log(std_tf), axis=-1)
     
     return logp_tf
 
@@ -87,13 +87,13 @@ class SetFromFlat(object):
         total_size = np.sum([intprod(shape) for shape in shapes])
 
         self.sess = sess
-        self.theta = tf.placeholder(dtype,[total_size])
+        self.theta = tf.compat.v1.placeholder(dtype,[total_size])
         start=0
         assigns = []
 
         for (shape,v) in zip(shapes,var_list):
             size = intprod(shape)
-            assigns.append(tf.assign(v, tf.reshape(self.theta[start:start+size],shape)))
+            assigns.append(tf.compat.v1.assign(v, tf.reshape(self.theta[start:start+size],shape)))
             start += size
 
         self.op = tf.group(*assigns)

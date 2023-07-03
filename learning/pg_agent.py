@@ -69,13 +69,13 @@ class PGAgent(TFAgent):
         a_size = self.get_action_size()
 
         # setup input tensors
-        self._s_ph = tf.placeholder(tf.float32, shape=[None, s_size], name="s") # observations
-        self._tar_val_ph = tf.placeholder(tf.float32, shape=[None], name="tar_val") # target value s
-        self._adv_ph = tf.placeholder(tf.float32, shape=[None], name="adv") # advantage
-        self._a_ph = tf.placeholder(tf.float32, shape=[None, a_size], name="a") # target actions
-        self._g_ph = tf.placeholder(tf.float32, shape=([None, g_size] if self.has_goal() else None), name="g") # goals
+        self._s_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, s_size], name="s") # observations
+        self._tar_val_ph = tf.compat.v1.placeholder(tf.float32, shape=[None], name="tar_val") # target value s
+        self._adv_ph = tf.compat.v1.placeholder(tf.float32, shape=[None], name="adv") # advantage
+        self._a_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, a_size], name="a") # target actions
+        self._g_ph = tf.compat.v1.placeholder(tf.float32, shape=([None, g_size] if self.has_goal() else None), name="g") # goals
 
-        with tf.variable_scope(self.MAIN_SCOPE):
+        with tf.compat.v1.variable_scope(self.MAIN_SCOPE):
             self._norm_a_pd_tf = self._build_net_actor(actor_net_name, self._get_actor_inputs(), actor_init_output_scale)
             self._critic_tf = self._build_net_critic(critic_net_name, self._get_critic_inputs())
 
@@ -127,27 +127,27 @@ class PGAgent(TFAgent):
         critic_momentum = 0.9 if (self.CRITIC_MOMENTUM_KEY not in json_data) else json_data[self.CRITIC_MOMENTUM_KEY]
         
         critic_vars = self._tf_vars(self.MAIN_SCOPE + '/critic')
-        critic_opt = tf.train.MomentumOptimizer(learning_rate=critic_stepsize, momentum=critic_momentum)
+        critic_opt = tf.compat.v1.train.MomentumOptimizer(learning_rate=critic_stepsize, momentum=critic_momentum)
         self._critic_grad_tf = tf.gradients(self._critic_loss_tf, critic_vars)
         self._critic_solver = MPISolver(self.sess, critic_opt, critic_vars)
 
         actor_vars = self._tf_vars(self.MAIN_SCOPE + '/actor')
-        actor_opt = tf.train.MomentumOptimizer(learning_rate=actor_stepsize, momentum=actor_momentum)
+        actor_opt = tf.compat.v1.train.MomentumOptimizer(learning_rate=actor_stepsize, momentum=actor_momentum)
         self._actor_grad_tf = tf.gradients(self._actor_loss_tf, actor_vars)
         self._actor_solver = MPISolver(self.sess, actor_opt, actor_vars)
 
         return
 
     def _build_net_actor(self, net_name, input_tfs, init_output_scale, reuse=False):
-        with tf.variable_scope('actor', reuse=reuse):
+        with tf.compat.v1.variable_scope('actor', reuse=reuse):
             h = NetBuilder.build_net(net_name, input_tfs, reuse)
             
             std_type = TFDistributionGaussianDiag.StdType.Default
             a_size = self.get_action_size()
 
-            mean_kernel_init = tf.random_uniform_initializer(minval=-init_output_scale, maxval=init_output_scale)
-            mean_bias_init = tf.zeros_initializer()
-            logstd_kernel_init = tf.random_uniform_initializer(minval=-init_output_scale, maxval=init_output_scale)
+            mean_kernel_init = tf.compat.v1.random_uniform_initializer(minval=-init_output_scale, maxval=init_output_scale)
+            mean_bias_init = tf.compat.v1.zeros_initializer()
+            logstd_kernel_init = tf.compat.v1.random_uniform_initializer(minval=-init_output_scale, maxval=init_output_scale)
             logstd_bias_init = np.log(self.exp_params_curr.noise) * np.ones(a_size)
             logstd_bias_init = logstd_bias_init.astype(np.float32)
             
@@ -161,10 +161,10 @@ class PGAgent(TFAgent):
     def _build_net_critic(self, net_name, input_tfs, reuse=False):
         out_size = 1
 
-        with tf.variable_scope('critic', reuse=reuse):
+        with tf.compat.v1.variable_scope('critic', reuse=reuse):
             h = NetBuilder.build_net(net_name, input_tfs, reuse)
-            val_tf = tf.layers.dense(inputs=h, units=out_size, activation=None,
-                                    kernel_initializer=tf.contrib.layers.xavier_initializer(),
+            val_tf = tf.compat.v1.layers.dense(inputs=h, units=out_size, activation=None,
+                                    kernel_initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform"),
                                     reuse=reuse)
             val_tf = tf.squeeze(val_tf, axis=-1)
 

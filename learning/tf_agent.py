@@ -13,7 +13,7 @@ class TFAgent(RLAgent):
     def __init__(self, world, id, json_data):
         self.tf_scope = 'agent'
         self.graph = tf.Graph()
-        self.sess = tf.Session(graph=self.graph)
+        self.sess = tf.compat.v1.Session(graph=self.graph)
 
         super().__init__(world, id, json_data)
         self._build_graph(json_data)
@@ -52,10 +52,10 @@ class TFAgent(RLAgent):
 
     def _build_graph(self, json_data):
         with self.sess.as_default(), self.graph.as_default():
-            with tf.variable_scope(self.tf_scope):
+            with tf.compat.v1.variable_scope(self.tf_scope):
                 self._build_nets(json_data)
                 
-                with tf.variable_scope(self.SOLVER_SCOPE):
+                with tf.compat.v1.variable_scope(self.SOLVER_SCOPE):
                     self._build_losses(json_data)
                     self._build_solvers(json_data)
 
@@ -85,13 +85,13 @@ class TFAgent(RLAgent):
 
     def _tf_vars(self, scope=''):
         with self.sess.as_default(), self.graph.as_default():
-            res = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=self.tf_scope + '/' + scope)
+            res = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES, scope=self.tf_scope + '/' + scope)
             assert len(res) > 0
         return res
 
     def _build_normalizers(self):
-        with self.sess.as_default(), self.graph.as_default(), tf.variable_scope(self.tf_scope):
-            with tf.variable_scope(self.RESOURCE_SCOPE):
+        with self.sess.as_default(), self.graph.as_default(), tf.compat.v1.variable_scope(self.tf_scope):
+            with tf.compat.v1.variable_scope(self.RESOURCE_SCOPE):
                 self._s_norm = TFNormalizer(self.sess, 's_norm', self.get_state_size(), self.world.env.build_state_norm_groups(self.id))
                 self._s_norm.set_mean_std(-self.world.env.build_state_offset(self.id), 
                                          1 / self.world.env.build_state_scale(self.id))
@@ -116,17 +116,17 @@ class TFAgent(RLAgent):
         return
 
     def _initialize_vars(self):
-        self.sess.run(tf.global_variables_initializer())
+        self.sess.run(tf.compat.v1.global_variables_initializer())
         return
 
     def _build_saver(self):
         vars = self._get_saver_vars()
-        self.saver = tf.train.Saver(vars, max_to_keep=0)
+        self.saver = tf.compat.v1.train.Saver(vars, max_to_keep=0)
         return
 
     def _get_saver_vars(self):
         with self.sess.as_default(), self.graph.as_default():
-            vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.tf_scope)
+            vars = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=self.tf_scope)
             vars = [v for v in vars if '/' + self.SOLVER_SCOPE + '/' not in v.name]
             #vars = [v for v in vars if '/target/' not in v.name]
             assert len(vars) > 0

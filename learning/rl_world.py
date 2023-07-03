@@ -140,4 +140,3 @@ class RLWorld(object):
             assert (agent != None), 'Failed to build agent {:d} from: {}'.format(id, agent_file)
         
         return agent
-        
