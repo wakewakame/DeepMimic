@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 import learning.tf_util as TFUtil
 
 '''

@@ -6,7 +6,7 @@ RUN apt upgrade -y
 RUN apt install -y vim tmux git cmake wget clang
 RUN apt install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev mesa-utils libglu1-mesa-dev libpython3.11-dev python3-pip libopenmpi-dev
 RUN apt install -y curl libssl-dev zlib1g-dev
-RUN apt install -y patchelf
+RUN apt install -y patchelf freeglut3
 
 ARG USERNAME=user
 ARG GROUPNAME=user

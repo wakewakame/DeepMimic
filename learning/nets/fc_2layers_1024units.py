@@ -1,4 +1,5 @@
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 import learning.tf_util as TFUtil
 
 NAME = "fc_2layers_1024units"

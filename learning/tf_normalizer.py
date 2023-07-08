@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 from learning.normalizer import Normalizer
 
 class TFNormalizer(Normalizer):

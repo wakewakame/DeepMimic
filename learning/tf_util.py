@@ -1,4 +1,5 @@
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 import numpy as np
 import os
 

@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 
 from env.env import Env
 import learning.tf_util as TFUtil

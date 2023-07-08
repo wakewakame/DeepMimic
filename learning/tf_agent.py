@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 from abc import abstractmethod
 
 from learning.rl_agent import RLAgent

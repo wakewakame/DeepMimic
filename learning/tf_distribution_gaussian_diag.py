@@ -1,6 +1,7 @@
 from enum import Enum
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior()
 import learning.tf_util as TFUtil
 from learning.tf_distribution import TFDistribution
 
