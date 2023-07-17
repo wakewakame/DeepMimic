@@ -23,6 +23,22 @@ export DISPLAY="192.168.11.3:0"
 python DeepMimic.py --arg_file args/run_humanoid3d_spinkick_args.txt
 ```
 
+# rdp でのウィンドウ表示
+
+```sh
+ssh -L 23389:localhost:23389 <remote_host>
+git clone https://github.com/wakewakame/DeepMimic.git
+cd DeepMimic/docker
+./start build
+./start run
+cd DeepMimicCore
+./build.sh
+cd ../
+python DeepMimic.py --arg_file args/run_humanoid3d_spinkick_args.txt
+```
+
+`localhost:23389` に対して `username:password=user:user` でアクセスする。
+
 # Intro 
 
 Code accompanying the following papers:

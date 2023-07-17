@@ -19,8 +19,15 @@ case "$1" in
         docker run \
             --name deepmimic \
             --rm -it \
+			-p 23389:3389 \
             -v $PWD/../:/home/user/DeepMimic \
-            deepmimic
+            deepmimic \
+			/bin/sh -c ' \
+				echo user | sudo -S /etc/init.d/xrdp stop && \
+				echo user | sudo -S /etc/init.d/xrdp start && \
+				export DISPLAY=:10 && \
+				/bin/bash \
+			'
         ;;
     "exec" )
         # 既に起動しているDockerコンテナにログイン
