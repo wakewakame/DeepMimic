@@ -12,7 +12,8 @@ case "$1" in
         docker build \
             -t deepmimic \
             --network host \
-            .
+            . && \
+        docker save deepmimic | xz -9 -c > deepmimic.tar.xz
         ;;
     "run" )
         # Dockerコンテナを起動
