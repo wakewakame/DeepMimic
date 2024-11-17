@@ -26,7 +26,7 @@ LIBDIRS = -L$(GLEW_LIB_DIR) -L$(FREEGLUT_LIB_DIR) -L$(BULLET_LIB_DIR)
 LIBS = -lGLEW -lGL -lGLU -lglut -lBulletDynamics -lBulletCollision -lLinearMath -lm -lstdc++
 
 CC = clang++
-CFLAGS = -std=c++11 -O3 -Wall -fPIC 
+CFLAGS = -std=c++11 -O0 -g3 -Wall -fPIC
 
 SRC_DIRS = util/ \
 	util/json/ \

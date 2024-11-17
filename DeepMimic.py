@@ -53,9 +53,9 @@ def build_arg_parser(args):
 
 
 def update_intermediate_buffer():
-    if not (reshaping):
-        if (win_width != world.env.get_win_width() or win_height != world.env.get_win_height()):
-            world.env.reshape(win_width, win_height)
+    #if not (reshaping):
+    #    if (win_width != world.env.get_win_width() or win_height != world.env.get_win_height()):
+    #        world.env.reshape(win_width, win_height)
 
     return
 
@@ -83,7 +83,7 @@ def draw():
     global reshaping
 
     update_intermediate_buffer()
-    world.env.draw()
+    #world.env.draw()
     
     glutSwapBuffers()
     reshaping = False
@@ -114,7 +114,7 @@ def reload():
     global world
     global args
 
-    world = build_world(args, enable_draw=True)
+    world = build_world(args, enable_draw=False)
     return
 
 def reset():
@@ -227,7 +227,7 @@ def toggle_training():
 
 def keyboard(key, x, y):
     key_val = int.from_bytes(key, byteorder='big')
-    world.env.keyboard(key_val, x, y)
+    #world.env.keyboard(key_val, x, y)
 
     if (key == b'\x1b'): # escape
         shutdown()
@@ -254,11 +254,11 @@ def keyboard(key, x, y):
     return
 
 def mouse_click(button, state, x, y):
-    world.env.mouse_click(button, state, x, y)
+    #world.env.mouse_click(button, state, x, y)
     glutPostRedisplay()
 
 def mouse_move(x, y):
-    world.env.mouse_move(x, y)
+    #world.env.mouse_move(x, y)
     glutPostRedisplay()
     
     return
@@ -281,7 +281,7 @@ def setup_draw():
     glutTimerFunc(display_anim_time, animate, 0)
 
     reshape(win_width, win_height)
-    world.env.reshape(win_width, win_height)
+    #world.env.reshape(win_width, win_height)
     
     return
 
