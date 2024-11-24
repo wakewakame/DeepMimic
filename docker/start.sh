@@ -13,7 +13,8 @@ case "$1" in
             -t deepmimic \
             --network host \
             . && \
-        docker save deepmimic | xz -9 -c > deepmimic.tar.xz
+		true
+        #docker save deepmimic | xz -9 -c > deepmimic.tar.xz
         ;;
     "run" )
         # Dockerコンテナを起動
@@ -21,6 +22,7 @@ case "$1" in
             --name deepmimic \
             --rm -it \
 			-p 23389:3389 \
+			-p 8080:8080 \
             -v $PWD/../:/home/user/DeepMimic \
             deepmimic \
 			/bin/sh -c ' \

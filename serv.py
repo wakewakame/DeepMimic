@@ -1,3 +1,8 @@
+import aiohttp
+from aiohttp import web
+
+import asyncio
+
 import numpy as np
 import sys
 import random
@@ -87,7 +92,8 @@ def debug(world, timestep):
 		# 詳細は DeepMimicCore/sim/CtController.cpp の RecordState 関数を参照
 		s = s[1:136].reshape(15, 9)
 		for p in s:
-			print(", ".join([str(x) for x in p]))
+			#print(", ".join([str(x) for x in p]))
+			pass
 	debug_frame += 1
 	return
 
@@ -129,17 +135,38 @@ def build_world(args, enable_draw, playback_speed=1):
 	world.env.set_playback_speed(playback_speed)
 	return world
 
+async def handle(request):
+	with open("index.html", "r") as f:
+		return web.Response(text=f.read(), content_type="text/html")
+
+def get_pose():
+	poses = []
+	for agent in world.agents:
+		s = world.env.record_state(agent.id)
+		s = s[1:136].reshape(15, 9)
+		pose = "[" + ",".join(["[" + ",".join([str(x) for x in p]) + "]" for p in s]) + "]"
+		poses.append(pose)
+	return "[" + ",".join(poses) + "]"
+
+async def websocket_handler(request):
+	ws = web.WebSocketResponse()
+	await ws.prepare(request)
+	while True:
+		animate(0)
+		await ws.send_str(get_pose())
+		await asyncio.sleep(1/60)
+	print('websocket connection closed')
+	return ws
+
+app = web.Application()
+app.add_routes([web.get('/', handle),
+				web.get('/ws', websocket_handler)])
+
 def main():
 	global args
-
-	# Command line arguments
 	args = sys.argv[1:]
-
 	reload()
-	for i in range(2):
-		animate(0)
-
-	return
+	web.run_app(app)
 
 if __name__ == '__main__':
 	main()

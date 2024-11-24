@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>websocket client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/p5.min.js" integrity="sha512-265OeMthg1wxVfU0mpNMtNrz2E+OKxJ9CNbmv+oYCxNO93Lgmxq9pwqubnQqkSJgzvsqLju8Mr106tcMlwsZxg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </head>
+  <body>
+    <script>
+      const ws = new WebSocket('ws://localhost:8080/ws');
+      let poses = null;
+
+      ws.onopen = () => {
+        console.log('connected');
+        ws.send('hello');
+      };
+      ws.onmessage = (e) => {
+        poses = JSON.parse(e.data);
+
+      };
+      ws.onclose = () => {
+        console.log('disconnected');
+      };
+
+      let cam;
+
+      function setup() {
+        createCanvas(400, 400, WEBGL);
+        cam = createCamera();
+        cam.setPosition(0, 0, -500);
+        cam.lookAt(0, 0, 0);
+      }
+
+      function draw() {
+        background(0)
+
+        let ellapsedTime = millis() / 1000;
+        cam.setPosition(500 * sin(ellapsedTime), 0, 500 * cos(ellapsedTime));
+        cam.lookAt(0, 0, 0);
+
+        if (poses !== null) {
+          noStroke()
+          fill(255)
+          for (pose of poses) {
+            for (p of pose) {
+              push()
+              let s = 100
+              translate(p[0] * s, p[1] * s, p[2] * s)
+              sphere(2)
+              pop()
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
