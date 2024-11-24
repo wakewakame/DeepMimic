@@ -1,0 +1,9 @@
+[
+  {
+	"arguments": [
+      "c++", "-c", "-g", "-std=c++11", "-O0", "-g3", "-Wall", "-fPIC", "-I./", "-lGLEW", "-lGL", "-lGLU", "-lglut", "-lBulletDynamics", "-lBulletCollision", "-lLinearMath", "-lm", "-lstdc++", "DeepMimicCore.cpp", "DeepMimicCore_wrap.cxx", "-I/usr/include/python3.11"
+    ],
+    "directory": "/home/yoshii/Documents/github/DeepMimic/DeepMimicCore",
+    "file": "Main.cpp"
+  }
+]
