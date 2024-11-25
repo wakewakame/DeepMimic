@@ -3,3 +3,4 @@ numpy==1.23.0
 PyOpenGL==3.1.7
 protobuf==4.23.3
 mpi4py==3.1.4
+aiohttp==3.11

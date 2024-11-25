@@ -31,7 +31,7 @@ bullet() {
   cd build_cmake
   if [ ! -f Makefile ]; then    
     cmake -DCMAKE_INSTALL_PREFIX=install -DBUILD_PYBULLET=OFF -DBUILD_PYBULLET_NUMPY=OFF -DUSE_DOUBLE_PRECISION=OFF -DBT_USE_EGL=ON \
-      -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. || exit 1
+      -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_BULLET2_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF .. || exit 1
   fi
   if [ ! -d install ]; then
     make install -j $(command nproc 2>/dev/null || echo 12) || exit 1

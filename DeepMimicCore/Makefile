@@ -8,7 +8,7 @@ MKDIR = mkdir -p
 # export BULLET_INC_DIR = third/bullet3-2.88/build_cmake/install/include/bullet/
 # export BULLET_LIB_DIR = third/bullet3-2.88/build_cmake/install/lib
 # export GLEW_INC_DIR = third/glew-2.1.0/install/usr/include/
-# export GLEW_LIB_DIR = third/glew-2.1.0/lib/
+export GLEW_LIB_DIR = third/glew-2.1.0/lib/
 # export FREEGLUT_INC_DIR = third/freeglut-3.0.0/install/include/
 # export FREEGLUT_LIB_DIR = third/freeglut-3.0.0/install/lib
 

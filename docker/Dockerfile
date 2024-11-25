@@ -28,14 +28,13 @@ RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 RUN echo 'export OMPI_MCA_btl_vader_single_copy_mechanism=none' >> ~/.bashrc
 
 WORKDIR /home/$USERNAME/DeepMimic
-COPY requirements.txt /home/$USERNAME/DeepMimic
-RUN ~/.pyenv/shims/pip install -r requirements.txt
 RUN echo "export LD_LIBRARY_PATH=\"/home/$USERNAME/DeepMimic/DeepMimicCore/third/glew-2.1.0/lib:/home/$USERNAME/DeepMimic/DeepMimicCore/third/freeglut-3.0.0/lib\"" >> ~/.bashrc
 
 USER root
-RUN apt install -y xrdp lxde
-RUN echo 'lxsession -s LXDE -e LXDE' > ~/.xsession
 RUN apt install -y sudo
 RUN echo 'user:user' | chpasswd
 RUN gpasswd -a user sudo
 USER user
+
+COPY requirements.txt /home/$USERNAME/DeepMimic
+RUN ~/.pyenv/shims/pip install -r requirements.txt
