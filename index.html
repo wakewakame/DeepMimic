@@ -6,24 +6,183 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/p5.min.js" integrity="sha512-265OeMthg1wxVfU0mpNMtNrz2E+OKxJ9CNbmv+oYCxNO93Lgmxq9pwqubnQqkSJgzvsqLju8Mr106tcMlwsZxg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   </head>
   <body>
+    <button id="connect">connect</button>
+    <button id="disconnect">disconnect</button>
     <script>
-      const ws = new WebSocket('ws://localhost:8080/ws');
+      // math util
+      const Vec3 = class {
+        constructor(x, y, z) {
+          this.x = x;
+          this.y = y;
+          this.z = z;
+        }
+        static vadd(v1, v2) {
+          return new Vec3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+        }
+        static vcross(v1, v2) {
+          return new Vec3(
+            v1.y * v2.z - v1.z * v2.y,
+            v1.z * v2.x - v1.x * v2.z,
+            v1.x * v2.y - v1.y * v2.x
+          );
+        }
+        static vdot(v1, v2) {
+          return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+        }
+      };
+      const Mat3 = class {
+        constructor(c1, c2, c3) {
+          this.c1 = c1;
+          this.c2 = c2;
+          this.c3 = c3;
+        }
+        transpose() {
+          return new Mat3(
+            new Vec3(this.c1.x, this.c2.x, this.c3.x),
+            new Vec3(this.c1.y, this.c2.y, this.c3.y),
+            new Vec3(this.c1.z, this.c2.z, this.c3.z)
+          );
+        }
+        static eye() {
+          return new Mat3(
+            new Vec3(1, 0, 0),
+            new Vec3(0, 1, 0),
+            new Vec3(0, 0, 1)
+          );
+        }
+        static vcross(m, v) {
+          const tm = m.transpose();
+          return new Vec3(
+            tm.c1.x * v.x + tm.c2.x * v.y + tm.c3.x * v.z,
+            tm.c1.y * v.x + tm.c2.y * v.y + tm.c3.y * v.z,
+            tm.c1.z * v.x + tm.c2.z * v.y + tm.c3.z * v.z
+          );
+        }
+        static mcross(m1, m2) {
+          const tm1 = m1.transpose();
+          return new Mat3(
+            new Vec3(
+              Vec3.vdot(tm1.c1, m2.c1),
+              Vec3.vdot(tm1.c2, m2.c1),
+              Vec3.vdot(tm1.c3, m2.c1)
+            ),
+            new Vec3(
+              Vec3.vdot(tm1.c1, m2.c2),
+              Vec3.vdot(tm1.c2, m2.c2),
+              Vec3.vdot(tm1.c3, m2.c2)
+            ),
+            new Vec3(
+              Vec3.vdot(tm1.c1, m2.c3),
+              Vec3.vdot(tm1.c2, m2.c3),
+              Vec3.vdot(tm1.c3, m2.c3)
+            )
+          );
+        }
+      };
+
+      // pose util
+      const Pose = class {
+        constructor(pose) {
+          this.joints = pose.map(p => {
+            const pos = new Vec3(p[0], p[1], p[2]);
+            const y_axis = new Vec3(p[3], p[4], p[5]);
+            const x_axis  = new Vec3(p[6], p[7], p[8]);
+            const z_axis  = Vec3.vcross(x_axis, y_axis);
+            const rot = new Mat3(x_axis, y_axis, z_axis);
+            return {
+              "pos": pos,
+              "rot": rot
+            };
+          });
+        }
+        convert(body) {
+          // TODO: 座標の計算が正しくなさそうなので要修正
+          for (let i = 0; i < this.joints.length; i++) {
+            const parentPos = body[i].Parent === -1 ?
+              new Vec3(0, 0, 0) :
+              this.joints[body[i].Parent].pos;
+            const parentRot = body[i].Parent === -1 ?
+              Mat3.eye() :
+              this.joints[body[i].Parent].rot;
+            this.joints[i] = { 
+              "parent": body[i].Parent,
+              "pos": Vec3.vadd(
+                parentPos,
+                Mat3.vcross(
+                  this.joints[i].rot,
+                  this.joints[i].pos
+                  //new Vec3(0, 1, 0)
+                ),
+              ),
+              "rot": Mat3.mcross(parentRot, this.joints[i].rot)
+            };
+          };
+        }
+        static parse(joints) {
+          const tmp = joints.reduce((joint, cur) => {
+            const addJoint = (parentJoint, targetID, childJoint) => {
+              if (parentJoint.id === targetID) {
+                parentJoint.child.push(childJoint);
+                return true;
+              }
+              for (let child of parentJoint.child) {
+                if (addJoint(child, targetID, childJoint)) {
+                  return true;
+                }
+              }
+              return false;
+            };
+            const childJoint = {
+              "id": cur.ID,
+              "child": []
+            };
+            addJoint(joint, cur.Parent, childJoint);
+            return joint;
+          }, {"id": -1, "child": []});
+          console.log(tmp);
+        }
+      };
+
+      // main
       let poses = null;
+      let body = null;
 
-      ws.onopen = () => {
-        console.log('connected');
-        ws.send('hello');
-      };
-      ws.onmessage = (e) => {
-        poses = JSON.parse(e.data);
+      const main = async () => {
+        const connectButton = document.getElementById('connect');
+        const disconnectButton = document.getElementById('disconnect');
 
+        let ws = null;
+        const connect = () => {
+          ws?.close();
+          ws = new WebSocket('ws://localhost:8080/ws');
+          ws.onopen = () => {
+            console.log('connected');
+          };
+          ws.onmessage = (e) => {
+            poses = JSON.parse(e.data).map(pose => new Pose(pose));
+            if (body !== null) poses.forEach(pose => pose.convert(body));
+          };
+          ws.onclose = () => {
+            console.log('disconnected');
+          };
+        };
+        const disconnect = () => {
+          ws?.close();
+          ws = null;
+        };
+        connect();
+        connectButton.addEventListener('click', connect);
+        disconnectButton.addEventListener('click', disconnect);
+
+        const humanoid = await fetch('data/characters/humanoid3d.txt')
+          .then(res => res.json());
+        console.log(humanoid);
+        Pose.parse(humanoid.Skeleton.Joints);
+        body = humanoid.Skeleton.Joints;
       };
-      ws.onclose = () => {
-        console.log('disconnected');
-      };
+      main();
 
       let cam;
-
       function setup() {
         createCanvas(400, 400, WEBGL);
         cam = createCamera();
@@ -34,18 +193,27 @@
       function draw() {
         background(0)
 
-        let ellapsedTime = millis() / 1000;
+        let ellapsedTime = millis() / 10000;
         cam.setPosition(500 * sin(ellapsedTime), 0, 500 * cos(ellapsedTime));
         cam.lookAt(0, 0, 0);
 
         if (poses !== null) {
-          noStroke()
-          fill(255)
           for (pose of poses) {
-            for (p of pose) {
+            for (p of pose.joints) {
+              if (p.parent === -1 || p.parent === undefined) {
+                continue;
+              }
+              const q = pose.joints[p.parent];
               push()
-              let s = 100
-              translate(p[0] * s, p[1] * s, p[2] * s)
+              let s = 50
+              stroke(255)
+              line(
+                p.pos.x * s, -p.pos.y * s, p.pos.z * s,
+                q.pos.x * s, -q.pos.y * s, q.pos.z * s
+              );
+              translate(p.pos.x * s, -p.pos.y * s, p.pos.z * s)
+              noStroke()
+              fill(255)
               sphere(2)
               pop()
             }

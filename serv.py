@@ -135,10 +135,6 @@ def build_world(args, enable_draw, playback_speed=1):
 	world.env.set_playback_speed(playback_speed)
 	return world
 
-async def handle(request):
-	with open("index.html", "r") as f:
-		return web.Response(text=f.read(), content_type="text/html")
-
 def get_pose():
 	poses = []
 	for agent in world.agents:
@@ -151,16 +147,23 @@ def get_pose():
 async def websocket_handler(request):
 	ws = web.WebSocketResponse()
 	await ws.prepare(request)
-	while True:
-		animate(0)
-		await ws.send_str(get_pose())
-		await asyncio.sleep(1/60)
+	while not ws.closed:
+		try:
+			animate(0)
+			await ws.send_str(get_pose())
+		except Exception as e:
+			break
+		try:
+			await ws.receive(1/60)
+		except TimeoutError as e:
+			pass
 	print('websocket connection closed')
 	return ws
 
 app = web.Application()
-app.add_routes([web.get('/', handle),
-				web.get('/ws', websocket_handler)])
+app.add_routes([web.get('/', lambda _: web.FileResponse('index.html')),
+				web.get('/ws', websocket_handler),
+				web.static('/', '.')])
 
 def main():
 	global args
